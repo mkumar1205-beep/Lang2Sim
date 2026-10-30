@@ -4,10 +4,11 @@ File: lang2sim/compiler/sdf_compiler.py
 """
 
 from pathlib import Path
+
 from jinja2 import Environment, FileSystemLoader
 
-from lang2sim.core.models import SimSpec
 from lang2sim.core.config import config
+from lang2sim.core.models import SimSpec
 
 
 class HarmonicSdfCompiler:
@@ -20,7 +21,7 @@ class HarmonicSdfCompiler:
         self.templates_dir = templates_dir
         self.env = Environment(
             loader=FileSystemLoader(str(self.templates_dir)),
-            autoescape=False,
+            autoescape=False,  # noqa: S701 - generating XML/SDF world files, not HTML
             trim_blocks=True,
             lstrip_blocks=True,
         )
@@ -31,14 +32,16 @@ class HarmonicSdfCompiler:
         sim_spec: SimSpec,
         output_path: Path,
         world_name: str = "default_world",
+        target: str = "harmonic",
     ) -> Path:
         """
-        Renders the SDF 1.9 template and writes the result to disk.
+        Renders the SDF template for target simulator and writes the result to disk.
         """
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
         context = {
             "world_name": world_name,
+            "target": target,
             "ambient_light": sim_spec.environment.ambient_light_luminance,
             "surface_friction": sim_spec.environment.surface_friction,
             "sky": sim_spec.environment.sky_weather,

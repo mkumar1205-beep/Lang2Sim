@@ -3,10 +3,11 @@ Collapsible Thought Box Widget
 File: lang2sim/cli/widgets/thought_box.py
 """
 
+from textual.events import Click
+from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Static
-from textual.reactive import reactive
-from textual.events import Click
+
 
 class ThoughtBox(Widget):
     """Collapsible reasoning thought block matching OpenCode UX (+ Thought: 1.2s)."""
@@ -25,7 +26,9 @@ class ThoughtBox(Widget):
     def __init__(self, duration_str: str = "1.2s", content: str = "", **kwargs):
         super().__init__(classes="thought-box", **kwargs)
         self.duration_str = duration_str
-        self.thought_content = content or "Evaluating warehouse boundaries and spatial constraints..."
+        self.thought_content = (
+            content or "Evaluating warehouse boundaries and spatial constraints..."
+        )
 
     def compose(self):
         yield Static(self._format_header(), id="thought-header", classes="thought-header")
@@ -49,3 +52,16 @@ class ThoughtBox(Widget):
     def on_mount(self) -> None:
         body = self.query_one("#thought-body", Static)
         body.display = not self.is_collapsed
+
+    def update_content(self, content: str, duration_str: str = "") -> None:
+        """Dynamically update thought text and duration during streaming or completion."""
+        self.thought_content = content
+        if duration_str:
+            self.duration_str = duration_str
+        try:
+            header = self.query_one("#thought-header", Static)
+            body = self.query_one("#thought-body", Static)
+            header.update(self._format_header())
+            body.update(self.thought_content)
+        except Exception:
+            pass
